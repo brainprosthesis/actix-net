@@ -39,36 +39,36 @@ pub use self::error::ConnectError;
 pub use self::resolve::{Resolver, ResolverFactory};
 pub use self::service::{ConnectService, ConnectServiceFactory, TcpConnectService};
 
-pub async fn start_resolver(
+pub fn start_resolver(
     cfg: ResolverConfig,
     opts: ResolverOpts,
 ) -> Result<AsyncResolver, ConnectError> {
-    Ok(AsyncResolver::tokio(cfg, opts).await?)
+    Ok(AsyncResolver::tokio(cfg, opts)?)
 }
 
 struct DefaultResolver(AsyncResolver);
 
-pub(crate) async fn get_default_resolver() -> Result<AsyncResolver, ConnectError> {
+pub(crate) fn get_default_resolver() -> Result<AsyncResolver, ConnectError> {
     if Arbiter::contains_item::<DefaultResolver>() {
         Ok(Arbiter::get_item(|item: &DefaultResolver| item.0.clone()))
     } else {
         let (cfg, opts) = match read_system_conf() {
             Ok((cfg, opts)) => (cfg, opts),
             Err(e) => {
-                log::error!("TRust-DNS can not load system config: {}", e);
+                log::error!("Trust-DNS can not load system config: {}", e);
                 (ResolverConfig::default(), ResolverOpts::default())
             }
         };
 
-        let resolver = AsyncResolver::tokio(cfg, opts).await?;
+        let resolver = AsyncResolver::tokio(cfg, opts)?;
 
         Arbiter::set_item(DefaultResolver(resolver.clone()));
         Ok(resolver)
     }
 }
 
-pub async fn start_default_resolver() -> Result<AsyncResolver, ConnectError> {
-    get_default_resolver().await
+pub fn start_default_resolver() -> Result<AsyncResolver, ConnectError> {
+    get_default_resolver()
 }
 
 /// Create TCP connector service.

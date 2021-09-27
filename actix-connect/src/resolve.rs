@@ -129,9 +129,7 @@ impl<T: Address> Service for Resolver<T> {
                 let resolver = if let Some(resolver) = resolver {
                     resolver
                 } else {
-                    get_default_resolver()
-                        .await
-                        .expect("Failed to get default resolver")
+                    get_default_resolver().expect("Failed to get default resolver")
                 };
                 ResolverFuture::new(req, &resolver).await
             }))
